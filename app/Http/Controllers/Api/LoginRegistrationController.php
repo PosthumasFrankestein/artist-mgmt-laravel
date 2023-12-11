@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\DB;
+
 
 class LoginRegistrationController extends Controller
 {
@@ -15,17 +17,32 @@ class LoginRegistrationController extends Controller
     {
 
         // Validation
-        $request->validate([
-            "name" => "required",
-            "email" => "required|email|unique:users",
-            "password" => "required|confirmed"
-        ]);
+$request->validate([
+    "fname" => "required",
+    "lname" => "required",
+    "email" => "required|email|unique:users",
+    "password" => "required|confirmed",
+    "date_of_birth" => "required|date", // Updated to make date_of_birth required
+    "phone" => "required|integer", // Updated to make phone required
+    "gender" => "required|string", // Updated to make gender required
+    "address" => "required|string", // Updated to make address required
+]);
 
-        User::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "password" => Hash::make($request->password),
-        ]);
+
+DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, phone, gender, address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?)', [
+    $request->fname,
+    $request->lname,
+    $request->email,
+    Hash::make($request->password),
+    $request->date_of_birth,
+    $request->phone,
+    $request->gender,
+    $request->address,
+    now(),
+    now(),
+]);
+
+
 
         return response()->json([
             "status" => true,
@@ -61,7 +78,7 @@ class LoginRegistrationController extends Controller
         }
         return response()->json([
             "status" => false,
-            "message" => "Invalid ligin details."
+            "message" => "Invalid login details."
         ]);
     }
 
