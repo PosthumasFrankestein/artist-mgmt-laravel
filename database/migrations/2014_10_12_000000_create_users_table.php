@@ -4,14 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Faker\Factory as Faker;
 
-return new class extends Migration
-{
-    /**p
+return new class extends Migration {
+    /**
      * Run the migrations.
      */
     public function up(): void
     {
+        $faker = Faker::create();
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('fname');
@@ -41,7 +44,40 @@ return new class extends Migration
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        
+
+        // Insert 50 dummy records with role "artist"
+        for ($i = 1; $i <= 50; $i++) {
+            DB::connection()->table('users')->insert([
+                'fname' => $faker->firstName,
+                'lname' => $faker->lastName,
+                'email' => 'artist' . $i . '@example.com',
+                'password' => Hash::make('password'),
+                'date_of_birth' => $faker->date,
+                'phone' => $faker->phoneNumber,
+                'gender' => $faker->randomElement(['Male', 'Female']),
+                'address' => $faker->address,
+                'role' => 'artist',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Insert 8 dummy records with role "artistmanager"
+        for ($i = 1; $i <= 8; $i++) {
+            DB::connection()->table('users')->insert([
+                'fname' => $faker->firstName,
+                'lname' => $faker->lastName,
+                'email' => 'artistmanager' . $i . '@example.com',
+                'password' => Hash::make('password'),
+                'date_of_birth' => $faker->date,
+                'phone' => $faker->phoneNumber,
+                'gender' => $faker->randomElement(['Male', 'Female']),
+                'address' => $faker->address,
+                'role' => 'artistmanager',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**

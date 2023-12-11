@@ -44,6 +44,8 @@ DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, pho
 
 
 
+
+
         return response()->json([
             "status" => true,
             "message" => "New User Created Successfully",
