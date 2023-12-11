@@ -134,4 +134,21 @@ DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, pho
             'data' => $users,
         ]);
     }
+
+
+    // Get all users' data API (GET)
+    public function delete()
+    {
+        $idToDelete = $request->id;
+        $tableName = $request->tableName;
+        $email=$request->email;
+
+        DB::delete("DELETE FROM $tableName WHERE id = ?", [$idToDelete]);
+
+        return response()->json([
+            'status' => true,
+            'message' => "$email Delated.",
+            'data' => $users,
+        ]);
+    }
 }
