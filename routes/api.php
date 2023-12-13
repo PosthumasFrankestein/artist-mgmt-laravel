@@ -21,10 +21,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post("register", [LoginRegistrationController::class, "register"]);
 Route::post("login", [LoginRegistrationController::class, "login"]);
+Route::put("bulkInsert", [LoginRegistrationController::class, "bulkInsert"]);
 
 Route::group([
     "middleware" => ["auth:api"]
-], function() {
+], function () {
     Route::get("profile", [LoginRegistrationController::class, "profile"]);
     Route::get("refresh", [LoginRegistrationController::class, "refreshToken"]);
     Route::get("logout", [LoginRegistrationController::class, "logout"]);

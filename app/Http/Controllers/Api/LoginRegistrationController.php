@@ -17,30 +17,30 @@ class LoginRegistrationController extends Controller
     {
 
         // Validation
-$request->validate([
-    "fname" => "required",
-    "lname" => "required",
-    "email" => "required|email|unique:users",
-    "password" => "required|confirmed",
-    "date_of_birth" => "required|date", // Updated to make date_of_birth required
-    "phone" => "required|integer", // Updated to make phone required
-    "gender" => "required|string", // Updated to make gender required
-    "address" => "required|string", // Updated to make address required
-]);
+        $request->validate([
+            "fname" => "required",
+            "lname" => "required",
+            "email" => "required|email|unique:users",
+            "password" => "required|confirmed",
+            "date_of_birth" => "required|date", // Updated to make date_of_birth required
+            "phone" => "required|integer", // Updated to make phone required
+            "gender" => "required|string", // Updated to make gender required
+            "address" => "required|string", // Updated to make address required
+        ]);
 
 
-DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, phone, gender, address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?)', [
-    $request->fname,
-    $request->lname,
-    $request->email,
-    Hash::make($request->password),
-    $request->date_of_birth,
-    $request->phone,
-    $request->gender,
-    $request->address,
-    now(),
-    now(),
-]);
+        DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, phone, gender, address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?)', [
+            $request->fname,
+            $request->lname,
+            $request->email,
+            Hash::make($request->password),
+            $request->date_of_birth,
+            $request->phone,
+            $request->gender,
+            $request->address,
+            now(),
+            now(),
+        ]);
 
 
 
@@ -101,8 +101,8 @@ DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, pho
     public function refreshToken()
     {
 
-        $newToken = auth()->refresh();
-        // $newToken = "123";
+        // $newToken = auth()->refresh();
+        $newToken = "123";
 
         return response()->json([
             "status" => true,
@@ -137,18 +137,60 @@ DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, pho
 
 
     // Get all users' data API (GET)
-    public function delete()
+    public function delete($request)
     {
         $idToDelete = $request->id;
         $tableName = $request->tableName;
-        $email=$request->email;
+        $email = $request->email;
 
-        DB::delete("DELETE FROM $tableName WHERE id = ?", [$idToDelete]);
+        // DB::delete("DELETE FROM $tableName WHERE id = ?", [$idToDelete]);
 
         return response()->json([
             'status' => true,
             'message' => "$email Delated.",
-            'data' => $users,
         ]);
     }
-}
+
+
+    public function bulkInsert(Request $request)
+    {
+        $selectedRows = $request->input('selectedRows');
+        $successRecords = [];
+        $failureRecords = [];
+
+        foreach ($selectedRows as $row) {
+            try {
+                // Assuming each item in $selectedRows is an associative array representing a row
+                // Adjust the column names as needed
+                $insertedId = DB::table('artists')->insertGetId($row);
+
+                if ($insertedId) {
+                    // Insertion successful
+                    $successRecords[] = $row;
+                } else {
+                    // Insertion failed
+                    $failureRecords[] = [
+                        'record' => $row,
+                        'error' => 'Failed to insert the record.',
+                    ];
+                }
+            } catch (\Exception $e) {
+                $failureRecords[] = [
+                    'record' => $row,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        $allRecordsInsertedSuccessfully = empty($failureRecords);
+
+        $response = [
+            'status' => $allRecordsInsertedSuccessfully,
+            'message' => $allRecordsInsertedSuccessfully ? 'All records inserted successfully.' : 'Some records failed to insert.',
+            'success_records' => $allRecordsInsertedSuccessfully ? $successRecords : [],
+            'failure_records' => $failureRecords,
+        ];
+
+        return response()->json($response);
+    }
+};

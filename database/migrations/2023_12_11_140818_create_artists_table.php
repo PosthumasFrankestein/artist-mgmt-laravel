@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -6,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -17,6 +19,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('id'); // Foreign key referencing users table
             $table->string('name');
             $table->date('dob')->nullable();
+            $table->string('phone')->nullable(); // Added phone column
+            $table->string('email')->unique(); // Added unique email column
             $table->string('gender')->nullable();
             $table->text('address')->nullable();
             $table->integer('first_release_year')->nullable();
@@ -35,5 +39,4 @@ return new class extends Migration {
     {
         Schema::dropIfExists('artists');
     }
-}
-?>
+};
