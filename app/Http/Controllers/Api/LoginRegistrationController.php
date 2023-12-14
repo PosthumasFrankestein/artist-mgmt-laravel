@@ -52,6 +52,54 @@ class LoginRegistrationController extends Controller
         ]);
     }
 
+    //Add New Artist API (POST, formdata)
+    public function addartist(Request $request)
+    {
+
+        // Validation
+        $request->validate([
+            "fname" => "required",
+            "lname" => "required",
+            "email" => "required|email|unique:users",
+            "date_of_birth" => "required|date", // Updated to make date_of_birth required
+            "phone" => "required|integer", // Updated to make phone required
+            "gender" => "required|string", // Updated to make gender required
+            "address" => "required|string", // Updated to make address required
+            "first_release_year" => "required|date",
+            "no_of_albums_released" => "required|string",
+        ]);
+
+
+        $artistData = [
+            'artist_id' => $request->artist_id, // Assuming you have a user_id in your request
+            'name' => $request->name,
+            'dob' => $request->dob,
+            'gender' => $request->gender,
+            'address' => $request->address,
+            'first_release_year' => $request->first_release_year,
+            'no_of_albums_released' => $request->no_of_albums_released,
+        ];
+
+        // Raw insert query for the artists table
+        DB::insert('INSERT INTO artists (artist_id, name, dob, gender, address, first_release_year, no_of_albums_released, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+            $artistData['artist_id'],
+            $artistData['name'],
+            $artistData['dob'],
+            $artistData['gender'],
+            $artistData['address'],
+            $artistData['first_release_year'],
+            $artistData['no_of_albums_released'],
+            now(),
+            now(),
+        ]);
+
+
+        return response()->json([
+            "status" => true,
+            "message" => "New User Created Successfully",
+        ]);
+    }
+
     // Login API (POST, formdata)
     public function login(Request $request)
     {
@@ -187,7 +235,7 @@ class LoginRegistrationController extends Controller
         $response = [
             'status' => $allRecordsInsertedSuccessfully,
             'message' => $allRecordsInsertedSuccessfully ? 'All records inserted successfully.' : 'Some records failed to insert.',
-            'success_records' => $allRecordsInsertedSuccessfully ? $successRecords : [],
+            'success_records' => $successRecords,
             'failure_records' => $failureRecords,
         ];
 
