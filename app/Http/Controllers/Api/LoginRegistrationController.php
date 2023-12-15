@@ -26,13 +26,15 @@ class LoginRegistrationController extends Controller
             "phone" => "required|integer", // Updated to make phone required
             "gender" => "required|string", // Updated to make gender required
             "address" => "required|string", // Updated to make address required
+            "role" => "required|string",
         ]);
 
 
-        DB::insert('INSERT INTO users (fname, lname, email, password, date_of_birth, phone, gender, address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?)', [
+        DB::insert('INSERT INTO users (fname, lname, email,role, password, date_of_birth, phone, gender, address, created_at, updated_at) VALUES (?, ?,?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?)', [
             $request->fname,
             $request->lname,
             $request->email,
+            $request->role,
             Hash::make($request->password),
             $request->date_of_birth,
             $request->phone,
@@ -43,12 +45,43 @@ class LoginRegistrationController extends Controller
         ]);
 
 
-
-
-
         return response()->json([
             "status" => true,
             "message" => "New User Created Successfully",
+        ]);
+    }
+
+    public function updateUser(Request $request)
+    {
+        // Validation
+        $user = DB::table('users')
+            ->where('id', $request->id)
+            ->first();
+
+
+        if ($user) {
+            DB::table('users')
+                ->where('id', $request->id)
+                ->update([
+                    'fname' => $request->fname,
+                    'lname' => $request->lname,
+                    'date_of_birth' => $request->date_of_birth,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'gender' => $request->gender,
+                    'address' => $request->address,
+                    'updated_at' => now(),
+                ]);
+        } else {
+            return response()->json([
+                "status" => false,
+                "message" => "User Doesn't exists.",
+            ]);
+        }
+
+        return response()->json([
+            "status" => true,
+            "message" => "User updated Successfully",
         ]);
     }
 
@@ -60,30 +93,36 @@ class LoginRegistrationController extends Controller
         $request->validate([
             "fname" => "required",
             "lname" => "required",
+            "id" => "required",
             "email" => "required|email|unique:users",
             "date_of_birth" => "required|date", // Updated to make date_of_birth required
             "phone" => "required|integer", // Updated to make phone required
             "gender" => "required|string", // Updated to make gender required
             "address" => "required|string", // Updated to make address required
-            "first_release_year" => "required|date",
-            "no_of_albums_released" => "required|string",
+            "first_release_year" => "required|integer",
+            "no_of_albums_released" => "required|integer",
         ]);
 
+        // dd($request);
 
         $artistData = [
-            'artist_id' => $request->artist_id, // Assuming you have a user_id in your request
-            'name' => $request->name,
-            'dob' => $request->dob,
+            'name' => $request->fname,
+            'dob' => $request->date_of_birth,
+            "email" => $request->email,
+            "phone" => $request->phone,
             'gender' => $request->gender,
             'address' => $request->address,
             'first_release_year' => $request->first_release_year,
             'no_of_albums_released' => $request->no_of_albums_released,
+            'id' => $request->id,
         ];
 
         // Raw insert query for the artists table
-        DB::insert('INSERT INTO artists (artist_id, name, dob, gender, address, first_release_year, no_of_albums_released, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
-            $artistData['artist_id'],
+        DB::insert('INSERT INTO artists (id,email, name, phone,dob, gender, address, first_release_year, no_of_albums_released, created_at, updated_at) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?)', [
+            $artistData['id'],
+            $artistData['email'],
             $artistData['name'],
+            $artistData['phone'],
             $artistData['dob'],
             $artistData['gender'],
             $artistData['address'],
@@ -183,15 +222,27 @@ class LoginRegistrationController extends Controller
         ]);
     }
 
+    public function fetchAllArtistsData()
+    {
+        // Use the DB facade to perform a raw query
+        $artists = DB::select('SELECT * FROM artists');
+
+        return response()->json([
+            'status' => true,
+            'message' => "All artists' data fetched",
+            'data' => $artists,
+        ]);
+    }
+
+
 
     // Get all users' data API (GET)
-    public function delete($request)
+    public function deleteUser(Request $request)
     {
-        $idToDelete = $request->id;
-        $tableName = $request->tableName;
         $email = $request->email;
+        $tablename = $request->tablename;
 
-        // DB::delete("DELETE FROM $tableName WHERE id = ?", [$idToDelete]);
+        DB::delete("DELETE FROM $tablename WHERE email = ?", [$email]);
 
         return response()->json([
             'status' => true,
@@ -240,5 +291,80 @@ class LoginRegistrationController extends Controller
         ];
 
         return response()->json($response);
+    }
+
+    public function save_song(Request $request)
+    {
+        // dd($request);
+        // Validate api data
+        $request->validate([
+            "title" => "required",
+            "album" => "required",
+            "genre" => "required",
+            "artist" => "required",
+            "signature" => "required", // Corrected the typo in "required"
+            "music_id" => "nullable|integer", // Use "nullable" and "integer" for optional numeric values
+        ]);
+
+        $post_data = [
+            'id' => $request->music_id,
+            "title" => $request->title,
+            "album" => $request->album,
+            "genre" => $request->genre, // Corrected the key name to "genres"
+            "artist_id" => $request->artist,
+            "updated_at" => now(),
+        ];
+
+        if ($request->signature == "update") {
+            $affectedRows = DB::table("music")
+                ->where("id", $request->music_id)
+                ->update($post_data);
+
+            if ($affectedRows > 0) {
+                return response()->json([
+                    'status' => true,
+                    'message' => "Music Update Sucess.",
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => "No changes made or something went wrong, please try again later..",
+                ]);
+            }
+        } else if ($request->signature == "insert") {
+            unset($post_data['id']);
+            $post_data['created_at'] = now();
+
+            $insertedId = DB::table("music")->insertGetId($post_data);
+
+            if ($insertedId) {
+                return response()->json([
+                    'status' => true,
+                    'message' => "Music Insert Sucess.",
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Something went wrong during insertion, please try again later..",
+                ]);
+            }
+        }
+    }
+
+    public function fetch_all_song(Request $request)
+    {
+        $id = $request->id;
+
+        // Get all songs for a specific artist
+        $songs = DB::select("SELECT M.*, A.name as artist_name
+                        FROM music M
+                        JOIN artists A ON A.id = M.artist_id
+                        WHERE A.id = ?", [$id]);
+
+        return response()->json([
+            'status' => true,
+            'message' => "All songs data fetched",
+            'data' => $songs,
+        ]);
     }
 };

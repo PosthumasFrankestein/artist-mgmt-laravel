@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -45,22 +46,33 @@ return new class extends Migration {
             'updated_at' => now(),
         ]);
 
-        // Insert 50 dummy records with role "artist"
-        for ($i = 1; $i <= 50; $i++) {
-            DB::connection()->table('users')->insert([
-                'fname' => $faker->firstName,
-                'lname' => $faker->lastName,
-                'email' => 'artist' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'date_of_birth' => $faker->date,
-                'phone' => $faker->phoneNumber,
-                'gender' => $faker->randomElement(['Male', 'Female']),
-                'address' => $faker->address,
-                'role' => 'artist',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        DB::table('users')->insert([
+            'fname' => 'Artist Manager',
+            'lname' => 'User',
+            'email' => 'b@gmail.com',
+            'password' => Hash::make('12'),
+            'date_of_birth' => '1990-01-01', // Replace with an actual date
+            'phone' => '1234567899', // Replace with an actual phone number
+            'gender' => 'Male', // Replace with an actual gender
+            'address' => '123 Admin Street, City',
+            'role' => 'artistmanager',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'fname' => 'Artist',
+            'lname' => 'User',
+            'email' => 'c@gmail.com',
+            'password' => Hash::make('12'),
+            'date_of_birth' => '1990-01-01', // Replace with an actual date
+            'phone' => '1234567899', // Replace with an actual phone number
+            'gender' => 'Male', // Replace with an actual gender
+            'address' => '123 Admin Street, City',
+            'role' => 'artist',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         // Insert 8 dummy records with role "artistmanager"
         for ($i = 1; $i <= 8; $i++) {
