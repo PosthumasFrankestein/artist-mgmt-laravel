@@ -16,7 +16,7 @@ class CreateMusicTable extends Migration
         Schema::create('music', function (Blueprint $table) {
             $table->id(); // Auto-incremental primary key
             $table->unsignedBigInteger('artist_id');
-            $table->foreign('artist_id')->references('id')->on('artists')->onDelete('cascade');
+            $table->foreign('artist_id')->references('artist_id')->on('artists')->onDelete('cascade');
             $table->string('title');
             $table->string('album');
             $table->string('genre');

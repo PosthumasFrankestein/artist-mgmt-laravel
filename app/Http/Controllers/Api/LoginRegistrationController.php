@@ -94,7 +94,7 @@ class LoginRegistrationController extends Controller
             "fname" => "required",
             "lname" => "required",
             "id" => "required",
-            "email" => "required|email|unique:users",
+            "email" => "required|email",
             "date_of_birth" => "required|date", // Updated to make date_of_birth required
             "phone" => "required|integer", // Updated to make phone required
             "gender" => "required|string", // Updated to make gender required
@@ -103,7 +103,6 @@ class LoginRegistrationController extends Controller
             "no_of_albums_released" => "required|integer",
         ]);
 
-        // dd($request);
 
         $artistData = [
             'name' => $request->fname,
@@ -118,7 +117,7 @@ class LoginRegistrationController extends Controller
         ];
 
         // Raw insert query for the artists table
-        DB::insert('INSERT INTO artists (id,email, name, phone,dob, gender, address, first_release_year, no_of_albums_released, created_at, updated_at) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?)', [
+        DB::insert('INSERT INTO artists (id,email, name, phone,dob, gender, address, first_release_year, no_of_albums_released, created_at, updated_at) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?,?)', [
             $artistData['id'],
             $artistData['email'],
             $artistData['name'],
@@ -157,7 +156,11 @@ class LoginRegistrationController extends Controller
         // Response
         if (!empty($token)) {
             // $qry = 'select * from users where email=?'.$request->email;
-            $user = User::where('email', $request->email)->first();
+            // $user = User::where('email', $request->email)->first();
+            $user = DB::selectOne('SELECT U.*, A.artist_id FROM users U LEFT JOIN artists A ON A.email = U.email WHERE U.email = ?', [$request->email]);
+
+            // $user = DB::select('SELECT U.*,A.artist_id FROM users U left join artists A on A.email=U.email where A.email=?', $request->email);
+
             return response()->json([
                 "status" => true,
                 "message" => "User logged in successfully.",
@@ -358,13 +361,25 @@ class LoginRegistrationController extends Controller
         // Get all songs for a specific artist
         $songs = DB::select("SELECT M.*, A.name as artist_name
                         FROM music M
-                        JOIN artists A ON A.id = M.artist_id
-                        WHERE A.id = ?", [$id]);
+                        JOIN artists A ON A.artist_id = M.artist_id
+                        WHERE A.artist_id = ?", [$id]);
 
         return response()->json([
             'status' => true,
             'message' => "All songs data fetched",
             'data' => $songs,
+        ]);
+    }
+
+    public function deleteSong(Request $request)
+    {
+        $id = $request->musicId;
+
+        DB::delete("DELETE FROM music WHERE id = ?", [$id]);
+
+        return response()->json([
+            'status' => true,
+            'message' => "Music Delated.",
         ]);
     }
 };

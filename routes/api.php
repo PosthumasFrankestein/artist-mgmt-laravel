@@ -21,8 +21,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post("login", [LoginRegistrationController::class, "login"]);
 Route::post("register", [LoginRegistrationController::class, "register"]);
-
-
 Route::post("save_song", [LoginRegistrationController::class, "save_song"]);
 Route::post("fetch_all_song", [LoginRegistrationController::class, "fetch_all_song"]);
 
@@ -40,5 +38,6 @@ Route::group([
     Route::post("addartist", [LoginRegistrationController::class, "addartist"]);
     Route::put("bulkInsert", [LoginRegistrationController::class, "bulkInsert"]);
     Route::put("deleteUser", [LoginRegistrationController::class, "deleteUser"]);
+    Route::put("deleteSong", [LoginRegistrationController::class, "deleteSong"]);
     Route::put("updateUser", [LoginRegistrationController::class, "updateUser"]);
 });
