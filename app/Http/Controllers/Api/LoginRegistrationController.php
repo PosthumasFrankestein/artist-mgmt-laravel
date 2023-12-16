@@ -167,7 +167,7 @@ class LoginRegistrationController extends Controller
         ]);
     }
 
-    public function fetchAllArtistsData()
+/*    public function fetchAllArtistsData()
     {
         // Use the DB facade to perform a raw query
         $artists = DB::select('SELECT U.*,A.first_release_year,A.no_of_albums_released,A.id as manager_id,A.artist_id FROM users U join artists A on A.email=U.email where role="artist"');
@@ -177,7 +177,7 @@ class LoginRegistrationController extends Controller
             'message' => "All artists' data fetched",
             'data' => $artists,
         ]);
-    }
+    }*/
 
 
 
@@ -196,7 +196,7 @@ class LoginRegistrationController extends Controller
     }
 
 
-    public function bulkInsert(Request $request)
+ /*   public function bulkInsert(Request $request)
     {
         $selectedRows = $request->input('selectedRows');
         $manager_id = $request->input('manager_id');
@@ -249,9 +249,9 @@ class LoginRegistrationController extends Controller
         ];
 
         return response()->json($response);
-    }
+    }*/
 
-    public function save_song(Request $request)
+  /*  public function save_song(Request $request)
     {
         // dd($request);
         // Validate api data
@@ -307,9 +307,9 @@ class LoginRegistrationController extends Controller
                 ]);
             }
         }
-    }
+    } */
 
-    public function fetch_all_song(Request $request)
+  /*  public function fetch_all_song(Request $request)
     {
         $id = $request->id;
 
@@ -324,8 +324,9 @@ class LoginRegistrationController extends Controller
             'message' => "All songs data fetched",
             'data' => $songs,
         ]);
-    }
+    }*/
 
+    /*
     public function deleteSong(Request $request)
     {
         $id = $request->musicId;
@@ -337,4 +338,5 @@ class LoginRegistrationController extends Controller
             'message' => "Music Delated.",
         ]);
     }
+    */
 };

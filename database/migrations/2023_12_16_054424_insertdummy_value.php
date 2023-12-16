@@ -54,26 +54,10 @@ return new class extends Migration
             'gender' => 'Male', // Replace with an actual gender
             'address' => '123 Admin Street, City',
             'role' => 'artist',
+            'man_id' => '2',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        // Insert 8 dummy records with role "artistmanager"
-        for ($i = 1; $i <= 8; $i++) {
-            DB::connection()->table('users')->insert([
-                'fname' => $faker->firstName,
-                'lname' => $faker->lastName,
-                'email' => 'artistmanager' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'date_of_birth' => $faker->date,
-                'phone' => $faker->phoneNumber,
-                'gender' => $faker->randomElement(['Male', 'Female']),
-                'address' => $faker->address,
-                'role' => 'artistmanager',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
     }
 
     /**

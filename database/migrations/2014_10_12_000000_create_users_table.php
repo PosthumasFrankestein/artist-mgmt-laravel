@@ -17,7 +17,7 @@ return new class extends Migration
         $faker = Faker::create();
 
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->id()->autoIncrement();
             $table->string('fname');
             $table->string('lname');
             $table->string('email')->unique();
@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('gender')->nullable(); // Added gender column
             $table->string('address')->nullable(); // Added address column
             $table->string('role');
+            $table->string('man_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
