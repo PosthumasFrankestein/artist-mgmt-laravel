@@ -29,8 +29,7 @@ class LoginRegistrationController extends Controller
             "role" => "required|string",
         ]);
 
-
-        DB::insert('INSERT INTO users (fname, lname, email,role, password, date_of_birth, phone, gender, address, created_at, updated_at) VALUES (?, ?,?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?)', [
+        DB::insert('INSERT INTO users (fname, lname, email,role, password, date_of_birth, phone, gender, address, created_at, updated_at,man_id) VALUES (?, ?,?, ?, ?, ?, CAST(? AS CHAR), ?, ?, ?, ?,case when "' . $request->role . '"="artist" then ' . $request->man_id . ' else null end )', [
             $request->fname,
             $request->lname,
             $request->email,
@@ -85,59 +84,6 @@ class LoginRegistrationController extends Controller
         ]);
     }
 
-    //Add New Artist API (POST, formdata)
-    public function addartist(Request $request)
-    {
-
-        // Validation
-        $request->validate([
-            "fname" => "required",
-            "lname" => "required",
-            "id" => "required",
-            "email" => "required|email",
-            "date_of_birth" => "required|date", // Updated to make date_of_birth required
-            "phone" => "required|integer", // Updated to make phone required
-            "gender" => "required|string", // Updated to make gender required
-            "address" => "required|string", // Updated to make address required
-            "first_release_year" => "required|integer",
-            "no_of_albums_released" => "required|integer",
-        ]);
-
-
-        $artistData = [
-            'name' => $request->fname,
-            'dob' => $request->date_of_birth,
-            "email" => $request->email,
-            "phone" => $request->phone,
-            'gender' => $request->gender,
-            'address' => $request->address,
-            'first_release_year' => $request->first_release_year,
-            'no_of_albums_released' => $request->no_of_albums_released,
-            'id' => $request->id,
-        ];
-
-        // Raw insert query for the artists table
-        DB::insert('INSERT INTO artists (id,email, name, phone,dob, gender, address, first_release_year, no_of_albums_released, created_at, updated_at) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?,?)', [
-            $artistData['id'],
-            $artistData['email'],
-            $artistData['name'],
-            $artistData['phone'],
-            $artistData['dob'],
-            $artistData['gender'],
-            $artistData['address'],
-            $artistData['first_release_year'],
-            $artistData['no_of_albums_released'],
-            now(),
-            now(),
-        ]);
-
-
-        return response()->json([
-            "status" => true,
-            "message" => "New User Created Successfully",
-        ]);
-    }
-
     // Login API (POST, formdata)
     public function login(Request $request)
     {
@@ -155,11 +101,7 @@ class LoginRegistrationController extends Controller
 
         // Response
         if (!empty($token)) {
-            // $qry = 'select * from users where email=?'.$request->email;
-            // $user = User::where('email', $request->email)->first();
             $user = DB::selectOne('SELECT U.*, A.artist_id FROM users U LEFT JOIN artists A ON A.email = U.email WHERE U.email = ?', [$request->email]);
-
-            // $user = DB::select('SELECT U.*,A.artist_id FROM users U left join artists A on A.email=U.email where A.email=?', $request->email);
 
             return response()->json([
                 "status" => true,
@@ -228,7 +170,7 @@ class LoginRegistrationController extends Controller
     public function fetchAllArtistsData()
     {
         // Use the DB facade to perform a raw query
-        $artists = DB::select('SELECT * FROM artists');
+        $artists = DB::select('SELECT U.*,A.first_release_year,A.no_of_albums_released,A.id as manager_id,A.artist_id FROM users U join artists A on A.email=U.email where role="artist"');
 
         return response()->json([
             'status' => true,
@@ -257,14 +199,27 @@ class LoginRegistrationController extends Controller
     public function bulkInsert(Request $request)
     {
         $selectedRows = $request->input('selectedRows');
+        $manager_id = $request->input('manager_id');
+        $created_at = now();
+        $updated_at = now();
+
         $successRecords = [];
         $failureRecords = [];
 
         foreach ($selectedRows as $row) {
             try {
-                // Assuming each item in $selectedRows is an associative array representing a row
-                // Adjust the column names as needed
-                $insertedId = DB::table('artists')->insertGetId($row);
+                $post_data['man_id'] = $manager_id;
+                $post_data['created_at'] = $created_at;
+                $post_data['updated_at'] = $updated_at;
+                foreach ($row as $key => $value) {
+                    $post_data[$key] = $value;
+                }
+
+                if (array_key_exists('password', $post_data)) {
+                    $post_data['password'] = bcrypt($post_data['password']);
+                }
+
+                $insertedId = DB::table('users')->insertGetId($post_data);
 
                 if ($insertedId) {
                     // Insertion successful

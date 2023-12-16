@@ -32,64 +32,35 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('users')->insert([
-            'fname' => 'Admin',
-            'lname' => 'User',
-            'email' => 'a@gmail.com',
-            'password' => Hash::make('12'),
-            'date_of_birth' => '1990-01-01', // Replace with an actual date
-            'phone' => '1234567890', // Replace with an actual phone number
-            'gender' => 'Male', // Replace with an actual gender
-            'address' => '123 Admin Street, City',
-            'role' => 'admin',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::unprepared('
+            CREATE TRIGGER users_after_insert
+            AFTER INSERT ON users FOR EACH ROW
+            BEGIN
+                IF NEW.role = "artist" THEN
+                    INSERT INTO artists (id, name, dob, phone, email, gender, address, first_release_year, no_of_albums_released, created_at, updated_at)
+                    VALUES (NEW.man_id, CONCAT(NEW.fname, " ", NEW.lname), NEW.date_of_birth, NEW.phone, NEW.email, NEW.gender, NEW.address, NULL, NULL, NOW(), NOW());
+                END IF;
+            END;
+        ');
 
-        DB::table('users')->insert([
-            'fname' => 'Artist Manager',
-            'lname' => 'User',
-            'email' => 'b@gmail.com',
-            'password' => Hash::make('12'),
-            'date_of_birth' => '1990-01-01', // Replace with an actual date
-            'phone' => '1234567899', // Replace with an actual phone number
-            'gender' => 'Male', // Replace with an actual gender
-            'address' => '123 Admin Street, City',
-            'role' => 'artistmanager',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('users')->insert([
-            'fname' => 'Artist',
-            'lname' => 'User',
-            'email' => 'c@gmail.com',
-            'password' => Hash::make('12'),
-            'date_of_birth' => '1990-01-01', // Replace with an actual date
-            'phone' => '1234567899', // Replace with an actual phone number
-            'gender' => 'Male', // Replace with an actual gender
-            'address' => '123 Admin Street, City',
-            'role' => 'artist',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // Insert 8 dummy records with role "artistmanager"
-        for ($i = 1; $i <= 8; $i++) {
-            DB::connection()->table('users')->insert([
-                'fname' => $faker->firstName,
-                'lname' => $faker->lastName,
-                'email' => 'artistmanager' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'date_of_birth' => $faker->date,
-                'phone' => $faker->phoneNumber,
-                'gender' => $faker->randomElement(['Male', 'Female']),
-                'address' => $faker->address,
-                'role' => 'artistmanager',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        DB::unprepared('
+        CREATE TRIGGER update_artists_info_after_user_update
+        AFTER UPDATE ON users
+        FOR EACH ROW
+        BEGIN
+            IF NEW.role = "artist" THEN
+                UPDATE artists
+                SET
+                    name = CONCAT(NEW.fname, " ", NEW.lname),
+                    dob = NEW.date_of_birth,
+                    phone = NEW.phone,
+                    email = NEW.email,
+                    gender = NEW.gender,
+                    address = NEW.address
+                WHERE email = NEW.email;
+            END IF;
+        END;
+        ');
     }
 
     /**
